@@ -1,0 +1,88 @@
+[
+  {
+    "id": "task-2630ee42-e810-4b94-a059-164894f192cb",
+    "title": "EAT DINNER",
+    "description": "",
+    "category": "Health",
+    "priority": "urgent",
+    "dueDate": "2026-11-22",
+    "completed": false,
+    "pinned": false,
+    "createdAt": "2026-11-22T10:48:24.829Z",
+    "updatedAt": "2026-11-22T10:48:41.530Z",
+    "subtasks": [],
+    "userId": "user-f8af41e1-1e21-4fe9-ab3f-670aa9cb3bbe"
+  },
+  {
+    "id": "task-21c172c0-3a02-4ae3-a47f-bfc30c52e71e",
+    "title": "complete 2 DSA questions",
+    "description": "",
+    "category": "Personal",
+    "priority": "medium",
+    "dueDate": "2026-11-14",
+    "completed": false,
+    "pinned": true,
+    "createdAt": "2026-11-14T05:46:49.615Z",
+    "updatedAt": "2026-11-14T06:27:39.841Z",
+    "subtasks": [],
+    "userId": "user-f8af41e1-1e21-4fe9-ab3f-670aa9cb3bbe"
+  },
+  {
+    "id": "task-1",
+    "title": "Design interactive dashboard UI",
+    "description": "Create high-fidelity wireframes and prototype responsive navigation for the analytics platform.",
+    "category": "Work",
+    "priority": "high",
+    "dueDate": "2026-11-15",
+    "completed": false,
+    "pinned": false,
+    "createdAt": "2026-11-14T09:00:00.000Z",
+    "updatedAt": "2026-11-14T06:27:38.458Z",
+    "subtasks": [
+      {
+        "id": "sub-1-1",
+        "title": "Research dark mode color palettes",
+        "completed": true
+      },
+      {
+        "id": "sub-1-2",
+        "title": "Draft Figma component library",
+        "completed": true
+      },
+      {
+        "id": "sub-1-3",
+        "title": "Review UX flow with team",
+        "completed": true
+      }
+    ],
+    "userId": "user-f8af41e1-1e21-4fe9-ab3f-670aa9cb3bbe"
+  },
+  {
+    "id": "task-2",
+    "title": "Weekly 5km morning run & hydration goal",
+    "description": "Maintain cadence above 160 spm and stay hydrated throughout the weekend run.",
+    "category": "Health",
+    "priority": "medium",
+    "dueDate": "2026-11-16",
+    "completed": false,
+    "pinned": false,
+    "createdAt": "2026-11-14T08:30:00.000Z",
+    "updatedAt": "2026-11-14T06:18:01.713Z",
+    "subtasks": [],
+    "userId": "user-f8af41e1-1e21-4fe9-ab3f-670aa9cb3bbe"
+  },
+  {
+    "id": "task-5",
+    "title": "Restock organic groceries & pantry essentials",
+    "description": "Almond milk, avocados, green tea, quinoa, and fresh berries.",
+    "category": "Personal",
+    "priority": "medium",
+    "dueDate": "2026-11-15",
+    "completed": false,
+    "pinned": false,
+    "createdAt": "2026-11-14T07:00:00.000Z",
+    "updatedAt": "2026-11-14T07:00:00.000Z",
+    "subtasks": [],
+    "userId": "user-f8af41e1-1e21-4fe9-ab3f-670aa9cb3bbe"
+  }
+]

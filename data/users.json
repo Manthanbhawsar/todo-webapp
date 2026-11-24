@@ -1,0 +1,37 @@
+[
+  {
+    "id": "user-f8af41e1-1e21-4fe9-ab3f-670aa9cb3bbe",
+    "name": "Alice Morgan",
+    "email": "alice_1795345530415@example.com",
+    "passwordHash": "$2b$10$UnXzNjJPBR6eXBoT/FWMUOSHAbqYIAukHGx7t6ZbpTNqe0mBRSCyy",
+    "createdAt": "2026-11-22T11:05:30.511Z"
+  },
+  {
+    "id": "user-84efeb04-af77-43dd-b0f3-0044738c4ab0",
+    "name": "Bob Smith",
+    "email": "bob_1795345530761@example.com",
+    "passwordHash": "$2b$10$BaFlXnvteyPqW9l11vX81uixX8VKjZvARpAim9sMLAB6l47.g2ym6",
+    "createdAt": "2026-11-22T11:05:30.845Z"
+  },
+  {
+    "id": "user-96a66cec-8ea9-40aa-bc20-8b00178398f0",
+    "name": "manthan",
+    "email": "manthanbhawsar@gmail.com",
+    "passwordHash": "$2b$10$FGLYz35BMWSlBHIHQ4b5ZuXiTD4UtS7QeI.LMoNp3xmLVY15byjeW",
+    "createdAt": "2026-11-22T11:07:41.534Z"
+  },
+  {
+    "id": "user-026c51ec-dfce-421f-8a41-437c6e1a16b9",
+    "name": "Alice Morgan",
+    "email": "alice_1795346224185@example.com",
+    "passwordHash": "$2b$10$QwEYfvmRrFGtn6s2f31J5.6fdbfd/HFiHeFo9FZg7ynoIYmHJ9wUi",
+    "createdAt": "2026-11-22T11:17:04.274Z"
+  },
+  {
+    "id": "user-06afc2e6-9bd4-4d7e-9428-66c85145d3ba",
+    "name": "Bob Smith",
+    "email": "bob_1795346224494@example.com",
+    "passwordHash": "$2b$10$Y6G9kL4x4tD9FPafm3xIGOVqXOrPVPnuw3FFfKjgrOMeSHOsqEGni",
+    "createdAt": "2026-11-22T11:17:04.578Z"
+  }
+]

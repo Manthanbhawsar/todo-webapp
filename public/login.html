@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenith — Sign In or Create Account</title>
+
+  <!-- Immediate Redirect if already logged in -->
+  <script>
+    if (localStorage.getItem('zenith_token')) {
+      window.location.replace('/index.html');
+    }
+  </script>
+
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            neutral: {
+              850: '#1F2024',
+              900: '#18191E',
+              950: '#111215',
+            }
+          },
+          boxShadow: {
+            'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.03)',
+            'subtle-hover': '0 4px 12px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.03)',
+            'subtle-dark': '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
+            'subtle-hover-dark': '0 4px 14px 0 rgba(0, 0, 0, 0.45)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#F8F9FA] dark:bg-[#111215] text-neutral-800 dark:text-neutral-200 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-200 font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Right Theme Toggle -->
+  <div class="fixed top-5 right-5 z-20">
+    <button
+      id="themeToggleBtn"
+      aria-label="Toggle theme"
+      title="Toggle color theme"
+      class="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition shadow-subtle dark:shadow-subtle-dark hover:border-neutral-300 dark:hover:border-neutral-700 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
+    >
+      <svg id="themeIconSun" class="w-4 h-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg id="themeIconMoon" class="w-4 h-4 block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+  </div>
+
+  <main class="w-full max-w-sm animate-fade-in">
+    <!-- Header Brand -->
+    <div class="text-center mb-6">
+      <div class="w-11 h-11 mx-auto rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm mb-3">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+        Zenith
+      </h1>
+      <p id="authSubtitle" class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+        Sign in to manage your private tasks
+      </p>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-6 sm:p-7 shadow-subtle dark:shadow-subtle-dark">
+      
+      <!-- Tabs (Log in / Sign up) -->
+      <nav class="flex p-1 bg-neutral-200/60 dark:bg-neutral-800 rounded-xl mb-5" role="tablist">
+        <button
+          type="button"
+          id="tabLogin"
+          role="tab"
+          aria-selected="true"
+          class="flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition text-neutral-900 dark:text-white bg-white dark:bg-neutral-900 shadow-sm"
+        >
+          Log in
+        </button>
+        <button
+          type="button"
+          id="tabSignup"
+          role="tab"
+          aria-selected="false"
+          class="flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+        >
+          Sign up
+        </button>
+      </nav>
+
+      <!-- Inline Error Message Banner -->
+      <div id="inlineError" class="hidden mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2">
+        <svg class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span id="errorMessage" class="flex-1 leading-snug"></span>
+      </div>
+
+      <!-- Auth Form -->
+      <form id="authForm" class="space-y-4">
+        
+        <!-- Name Field (Sign up only) -->
+        <div id="nameGroup" class="hidden space-y-1.5">
+          <label for="nameInput" class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
+            Full Name
+          </label>
+          <input
+            type="text"
+            id="nameInput"
+            autocomplete="name"
+            placeholder="Alex Morgan"
+            class="w-full px-3.5 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white placeholder-neutral-400 transition"
+          >
+        </div>
+
+        <!-- Email Field -->
+        <div class="space-y-1.5">
+          <label for="emailInput" class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
+            Email Address
+          </label>
+          <input
+            type="email"
+            id="emailInput"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full px-3.5 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white placeholder-neutral-400 transition"
+          >
+        </div>
+
+        <!-- Password Field with Show/Hide toggle -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="passwordInput" class="block text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
+              Password
+            </label>
+            <span id="passwordHint" class="hidden text-[11px] text-neutral-400">Min 8 characters</span>
+          </div>
+          <div class="relative">
+            <input
+              type="password"
+              id="passwordInput"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="w-full pl-3.5 pr-10 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white placeholder-neutral-400 transition"
+            >
+            <button
+              type="button"
+              id="togglePasswordBtn"
+              aria-label="Toggle password visibility"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+            >
+              <!-- Eye open icon -->
+              <svg id="eyeOpenIcon" class="w-4 h-4 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <!-- Eye closed icon -->
+              <svg id="eyeClosedIcon" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          id="submitBtn"
+          class="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm shadow-sm transition transform hover:-translate-y-0.5 active:translate-y-0 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 disabled:opacity-60 disabled:pointer-events-none"
+        >
+          <svg id="btnSpinner" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span id="btnText">Log In</span>
+        </button>
+
+      </form>
+
+    </div>
+
+    <!-- Footer Note -->
+    <p class="text-center text-xs text-neutral-400 mt-6">
+      Private, multi-user task management powered by Express &amp; JWT
+    </p>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      let isSignupMode = false;
+
+      const el = {
+        themeToggleBtn: document.getElementById('themeToggleBtn'),
+        authSubtitle: document.getElementById('authSubtitle'),
+        tabLogin: document.getElementById('tabLogin'),
+        tabSignup: document.getElementById('tabSignup'),
+        inlineError: document.getElementById('inlineError'),
+        errorMessage: document.getElementById('errorMessage'),
+        authForm: document.getElementById('authForm'),
+        nameGroup: document.getElementById('nameGroup'),
+        nameInput: document.getElementById('nameInput'),
+        emailInput: document.getElementById('emailInput'),
+        passwordInput: document.getElementById('passwordInput'),
+        passwordHint: document.getElementById('passwordHint'),
+        togglePasswordBtn: document.getElementById('togglePasswordBtn'),
+        eyeOpenIcon: document.getElementById('eyeOpenIcon'),
+        eyeClosedIcon: document.getElementById('eyeClosedIcon'),
+        submitBtn: document.getElementById('submitBtn'),
+        btnSpinner: document.getElementById('btnSpinner'),
+        btnText: document.getElementById('btnText'),
+        toastContainer: document.getElementById('toastContainer')
+      };
+
+      // Initialize Theme
+      initTheme();
+      el.themeToggleBtn.addEventListener('click', toggleTheme);
+
+      // Tab Switching
+      el.tabLogin.addEventListener('click', () => setMode(false));
+      el.tabSignup.addEventListener('click', () => setMode(true));
+
+      // Show/Hide Password
+      el.togglePasswordBtn.addEventListener('click', () => {
+        const isPassword = el.passwordInput.type === 'password';
+        el.passwordInput.type = isPassword ? 'text' : 'password';
+        el.eyeOpenIcon.classList.toggle('hidden', isPassword);
+        el.eyeClosedIcon.classList.toggle('hidden', !isPassword);
+      });
+
+      // Clear inline error upon input
+      [el.nameInput, el.emailInput, el.passwordInput].forEach(inp => {
+        inp.addEventListener('input', hideError);
+      });
+
+      // Form Submit Handler
+      el.authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideError();
+
+        const email = el.emailInput.value.trim();
+        const password = el.passwordInput.value;
+        const name = el.nameInput.value.trim();
+
+        if (isSignupMode && !name) {
+          showError('Please enter your full name');
+          el.nameInput.focus();
+          return;
+        }
+
+        if (!email) {
+          showError('Please enter your email address');
+          el.emailInput.focus();
+          return;
+        }
+
+        if (password.length < 8) {
+          showError('Password must be at least 8 characters long');
+          el.passwordInput.focus();
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          if (isSignupMode) {
+            await TaskAPI.signup({ name, email, password });
+            showToast('Account created successfully! Redirecting...', 'success');
+          } else {
+            await TaskAPI.login({ email, password });
+            showToast('Welcome back! Redirecting...', 'success');
+          }
+
+          setTimeout(() => {
+            window.location.replace('/index.html');
+          }, 350);
+        } catch (err) {
+          showError(err.message || 'Authentication failed. Please check your credentials.');
+          setLoading(false);
+        }
+      });
+
+      function setMode(signup) {
+        isSignupMode = signup;
+        hideError();
+
+        // Update Tabs UI
+        if (signup) {
+          el.tabSignup.className = 'flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition text-neutral-900 dark:text-white bg-white dark:bg-neutral-900 shadow-sm';
+          el.tabSignup.setAttribute('aria-selected', 'true');
+          el.tabLogin.className = 'flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white';
+          el.tabLogin.setAttribute('aria-selected', 'false');
+
+          el.nameGroup.classList.remove('hidden');
+          el.nameInput.required = true;
+          el.passwordHint.classList.remove('hidden');
+          el.btnText.textContent = 'Create Account';
+          el.authSubtitle.textContent = 'Create your private Zenith account';
+          el.passwordInput.autocomplete = 'new-password';
+          el.nameInput.focus();
+        } else {
+          el.tabLogin.className = 'flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition text-neutral-900 dark:text-white bg-white dark:bg-neutral-900 shadow-sm';
+          el.tabLogin.setAttribute('aria-selected', 'true');
+          el.tabSignup.className = 'flex-1 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white';
+          el.tabSignup.setAttribute('aria-selected', 'false');
+
+          el.nameGroup.classList.add('hidden');
+          el.nameInput.required = false;
+          el.passwordHint.classList.add('hidden');
+          el.btnText.textContent = 'Log In';
+          el.authSubtitle.textContent = 'Sign in to manage your private tasks';
+          el.passwordInput.autocomplete = 'current-password';
+          el.emailInput.focus();
+        }
+      }
+
+      function showError(msg) {
+        el.errorMessage.textContent = msg;
+        el.inlineError.classList.remove('hidden');
+      }
+
+      function hideError() {
+        el.inlineError.classList.add('hidden');
+        el.errorMessage.textContent = '';
+      }
+
+      function setLoading(isLoading) {
+        el.submitBtn.disabled = isLoading;
+        el.btnSpinner.classList.toggle('hidden', !isLoading);
+        if (isLoading) {
+          el.btnText.textContent = isSignupMode ? 'Creating account...' : 'Signing in...';
+        } else {
+          el.btnText.textContent = isSignupMode ? 'Create Account' : 'Log In';
+        }
+      }
+
+      function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+
+      function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      }
+
+      function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = 'toast-enter pointer-events-auto flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl shadow-lg text-xs font-medium max-w-sm border transition-all bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-800 dark:border-neutral-200';
+        toast.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full ${type === 'success' ? 'bg-emerald-500' : 'bg-indigo-500'}"></span>
+            <span>${message}</span>
+          </div>
+        `;
+        el.toastContainer.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.remove('toast-enter');
+          toast.classList.add('toast-leave');
+          setTimeout(() => toast.remove(), 200);
+        }, 3000);
+      }
+    })();
+  </script>
+</body>
+</html>

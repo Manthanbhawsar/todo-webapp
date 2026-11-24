@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zenith — Minimalist Task Management</title>
+  
+  <!-- Immediate Auth Guard -->
+  <script>
+    if (!localStorage.getItem('zenith_token')) {
+      window.location.replace('/login.html');
+    }
+  </script>
+
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            neutral: {
+              850: '#1F2024',
+              900: '#18191E',
+              950: '#111215',
+            }
+          },
+          boxShadow: {
+            'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 1px 3px 0 rgba(0, 0, 0, 0.03)',
+            'subtle-hover': '0 4px 12px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.03)',
+            'subtle-dark': '0 1px 2px 0 rgba(0, 0, 0, 0.3)',
+            'subtle-hover-dark': '0 4px 14px 0 rgba(0, 0, 0, 0.45)',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#F8F9FA] dark:bg-[#111215] text-neutral-800 dark:text-neutral-200 min-h-screen transition-colors duration-200 font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-14">
+
+    <!-- Top Navigation / Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-8 border-b border-neutral-200/80 dark:border-neutral-800/80">
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+            Zenith
+          </h1>
+          <p id="currentDateDisplay" class="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-0.5 font-normal">
+            Loading...
+          </p>
+        </div>
+      </div>
+
+      <!-- Header Controls -->
+      <div class="flex items-center gap-2.5">
+        <!-- Search bar -->
+        <div class="relative flex-1 sm:w-60">
+          <svg class="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" stroke-width="2"></circle>
+            <path d="M21 21l-4.35-4.35" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search tasks... (Press /)"
+            class="w-full pl-9 pr-8 py-2 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 transition shadow-subtle dark:shadow-subtle-dark"
+          >
+          <button id="clearSearchBtn" aria-label="Clear search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-0.5 rounded focus-visible:ring-2 focus-visible:ring-indigo-500">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <!-- Dark/Light Mode Toggle -->
+        <button
+          id="themeToggleBtn"
+          aria-label="Toggle theme"
+          title="Toggle color theme"
+          class="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition shadow-subtle dark:shadow-subtle-dark hover:border-neutral-300 dark:hover:border-neutral-700 active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
+        >
+          <svg id="themeIconSun" class="w-4 h-4 hidden dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+          <svg id="themeIconMoon" class="w-4 h-4 block dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+
+        <!-- New Task Button -->
+        <button
+          id="openCreateModalBtn"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm shadow-sm transition transform hover:-translate-y-0.5 active:translate-y-0 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>New Task</span>
+        </button>
+
+        <!-- User Profile & Logout -->
+        <div class="flex items-center gap-2 pl-2 border-l border-neutral-200 dark:border-neutral-800">
+          <div id="userProfilePill" class="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-medium border border-neutral-200/60 dark:border-neutral-700/60">
+            <span id="userInitialBadge" class="w-5 h-5 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">U</span>
+            <span id="userDisplayName" class="max-w-[120px] truncate" title="Logged in user">User</span>
+          </div>
+          <button
+            id="logoutBtn"
+            aria-label="Log out"
+            title="Log out of Zenith"
+            class="p-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-300 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/60 transition shadow-subtle dark:shadow-subtle-dark active:scale-95 focus-visible:ring-2 focus-visible:ring-indigo-500"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Minimal Stats Dashboard -->
+    <section class="grid grid-cols-2 sm:grid-cols-4 gap-3.5 my-7">
+      
+      <!-- Total Tasks -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-4 shadow-subtle dark:shadow-subtle-dark transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
+        <div class="text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
+          Total Tasks
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="statTotal" class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">0</span>
+          <span class="text-xs text-neutral-500 dark:text-neutral-400 font-normal">items</span>
+        </div>
+        <div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+          <span id="statPinnedCount" class="font-medium text-indigo-600 dark:text-indigo-400">0</span> pinned
+        </div>
+      </div>
+
+      <!-- Completed Tasks -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-4 shadow-subtle dark:shadow-subtle-dark transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
+        <div class="text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>Completed</span>
+          <span id="statPercent" class="text-xs font-semibold text-indigo-600 dark:text-indigo-400">0%</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span id="statCompleted" class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">0</span>
+          <!-- Minimal Circular Progress -->
+          <div class="relative w-8 h-8 flex items-center justify-center">
+            <svg class="w-8 h-8 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-neutral-100 dark:text-neutral-800" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path id="progressCircle" class="text-indigo-600 dark:text-indigo-500" stroke-dasharray="0, 100" stroke-width="4" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+          Finished tasks
+        </div>
+      </div>
+
+      <!-- Active Tasks -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-4 shadow-subtle dark:shadow-subtle-dark transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
+        <div class="text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
+          In Progress
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="statActive" class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">0</span>
+          <span class="text-xs text-neutral-500 dark:text-neutral-400 font-normal">pending</span>
+        </div>
+        <div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+          <span>Requires attention</span>
+        </div>
+      </div>
+
+      <!-- Due Soon / Overdue -->
+      <div class="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-4 shadow-subtle dark:shadow-subtle-dark transition-all hover:border-neutral-300 dark:hover:border-neutral-700">
+        <div class="text-xs font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider mb-1.5">
+          Overdue
+        </div>
+        <div class="flex items-baseline gap-1.5">
+          <span id="statOverdue" class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">0</span>
+          <span class="text-xs text-neutral-500 dark:text-neutral-400 font-normal">overdue</span>
+        </div>
+        <div class="mt-2 text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1">
+          <span id="statDueToday" class="font-medium text-neutral-700 dark:text-neutral-300">0</span> due today
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Quick Add Task Bar -->
+    <section class="mb-7">
+      <form id="quickAddForm" class="bg-white dark:bg-neutral-900 border border-neutral-200/90 dark:border-neutral-800 rounded-2xl p-2.5 sm:p-3 shadow-subtle dark:shadow-subtle-dark transition-all focus-within:border-indigo-500 dark:focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          
+          <!-- Text Input -->
+          <div class="flex-1">
+            <input
+              type="text"
+              id="quickTitleInput"
+              placeholder="Add a new task... (Press Enter to save)"
+              required
+              autocomplete="off"
+              class="w-full px-3 py-1.5 text-sm bg-transparent text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none"
+            >
+          </div>
+
+          <!-- Controls Container -->
+          <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-neutral-100 dark:border-neutral-800">
+            <!-- Category Selector with Custom Chevron -->
+            <div class="relative">
+              <select
+                id="quickCategorySelect"
+                class="appearance-none pl-3 pr-7 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg border border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer transition"
+              >
+                <option value="Work">Work</option>
+                <option value="Personal" selected>Personal</option>
+                <option value="Health">Health</option>
+                <option value="Study">Study</option>
+                <option value="Finance">Finance</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-neutral-500 dark:text-neutral-400">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Priority Selector with Custom Chevron -->
+            <div class="relative">
+              <select
+                id="quickPrioritySelect"
+                class="appearance-none pl-3 pr-7 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg border border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer transition"
+              >
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-neutral-500 dark:text-neutral-400">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Due Date Picker -->
+            <input
+              type="date"
+              id="quickDueDateInput"
+              class="px-2.5 py-1.5 text-sm font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-lg border border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer transition"
+            >
+
+            <!-- Add Button -->
+            <button
+              type="submit"
+              class="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm shadow-sm transition focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Add</span>
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </section>
+
+    <!-- Minimal Filter & Toolbar -->
+    <section class="flex flex-col gap-3.5 mb-6">
+      
+      <!-- Top Row: Status Tabs & Sorter -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <!-- Status Tabs -->
+        <nav class="flex items-center gap-1 p-1 bg-neutral-200/60 dark:bg-neutral-900 rounded-xl border border-neutral-200/60 dark:border-neutral-800 overflow-x-auto">
+          <button data-status="all" class="status-tab active px-3 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1.5 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">
+            <span>All</span>
+            <span id="tabCountAll" class="text-xs px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">0</span>
+          </button>
+          <button data-status="active" class="status-tab px-3 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1.5 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">
+            <span>Active</span>
+            <span id="tabCountActive" class="text-xs px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">0</span>
+          </button>
+          <button data-status="completed" class="status-tab px-3 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1.5 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">
+            <span>Completed</span>
+            <span id="tabCountCompleted" class="text-xs px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">0</span>
+          </button>
+          <button data-status="pinned" class="status-tab px-3 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1.5 whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">
+            <svg class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+            <span>Pinned</span>
+            <span id="tabCountPinned" class="text-xs px-1.5 py-0.2 rounded bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold">0</span>
+          </button>
+        </nav>
+
+        <!-- Right Side: Sorter & Clear Completed -->
+        <div class="flex items-center gap-2 self-end sm:self-auto">
+          <div class="relative">
+            <select
+              id="sortSelect"
+              class="appearance-none pl-3 pr-7 py-1.5 text-sm font-medium bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 rounded-xl border border-neutral-200 dark:border-neutral-800 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer transition shadow-subtle dark:shadow-subtle-dark"
+            >
+              <option value="createdAt-desc">Newest First</option>
+              <option value="createdAt-asc">Oldest First</option>
+              <option value="dueDate-asc">Due Soonest</option>
+              <option value="priority-desc">Priority</option>
+              <option value="title-asc">Title (A-Z)</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-neutral-500 dark:text-neutral-400">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </div>
+
+          <button
+            id="clearCompletedBtn"
+            title="Clear all completed tasks"
+            class="px-2.5 py-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 hover:bg-neutral-200/60 dark:hover:bg-neutral-800 rounded-xl transition flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-indigo-500"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span class="hidden sm:inline">Clear Done</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Row: Category & Priority Filter Badges -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+        <span class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mr-1">Filter:</span>
+        <div id="categoryFilterContainer" class="flex items-center gap-1">
+          <button data-category="all" class="cat-pill active px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">All</button>
+          <button data-category="Work" class="cat-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">Work</button>
+          <button data-category="Personal" class="cat-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">Personal</button>
+          <button data-category="Health" class="cat-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">Health</button>
+          <button data-category="Study" class="cat-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">Study</button>
+          <button data-category="Finance" class="cat-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition whitespace-nowrap focus-visible:ring-2 focus-visible:ring-indigo-500">Finance</button>
+        </div>
+
+        <div class="h-3.5 w-[1px] bg-neutral-200 dark:bg-neutral-800 mx-1"></div>
+
+        <div id="priorityFilterContainer" class="flex items-center gap-1">
+          <button data-priority="all" class="prio-pill active px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition focus-visible:ring-2 focus-visible:ring-indigo-500">All</button>
+          <button data-priority="urgent" class="prio-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition focus-visible:ring-2 focus-visible:ring-indigo-500">Urgent</button>
+          <button data-priority="high" class="prio-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition focus-visible:ring-2 focus-visible:ring-indigo-500">High</button>
+          <button data-priority="medium" class="prio-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition focus-visible:ring-2 focus-visible:ring-indigo-500">Medium</button>
+          <button data-priority="low" class="prio-pill px-2.5 py-1 text-xs sm:text-sm font-medium rounded-lg transition focus-visible:ring-2 focus-visible:ring-indigo-500">Low</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Task List Section -->
+    <main class="space-y-3">
+      
+      <!-- Pinned Tasks Container -->
+      <div id="pinnedSection" class="hidden mb-6">
+        <div class="flex items-center gap-1.5 mb-2.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+          <span>Pinned Tasks</span>
+        </div>
+        <div id="pinnedTaskList" class="space-y-2.5">
+          <!-- Pinned task cards injected dynamically -->
+        </div>
+      </div>
+
+      <!-- Main Tasks Section Header -->
+      <div class="flex items-center justify-between mb-1.5">
+        <h2 id="taskListHeading" class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+          Tasks
+        </h2>
+        <span id="showingCountText" class="text-xs text-neutral-500 dark:text-neutral-400 font-normal">Loading...</span>
+      </div>
+
+      <!-- Tasks Container -->
+      <div id="taskList" class="space-y-2.5">
+        <!-- Task cards injected dynamically -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden py-16 px-4 text-center rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/60 dark:bg-neutral-900/60 shadow-subtle dark:shadow-subtle-dark">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-400 flex items-center justify-center">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+        </div>
+        <h3 class="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-1">No tasks found</h3>
+        <p class="text-sm text-neutral-500 dark:text-neutral-400 max-w-xs mx-auto mb-4">
+          No tasks match your filters. Add a new task to get started.
+        </p>
+        <button
+          onclick="document.getElementById('quickTitleInput').focus()"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium text-sm hover:opacity-90 transition focus-visible:ring-2 focus-visible:ring-indigo-500"
+        >
+          <span>Create Task</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="py-14 text-center">
+        <div class="inline-block w-6 h-6 border-2 border-neutral-300 dark:border-neutral-700 border-t-indigo-600 rounded-full animate-spin mb-2.5"></div>
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Loading tasks...</p>
+      </div>
+
+    </main>
+
+    <!-- Minimal Footer -->
+    <footer class="mt-14 pt-6 border-t border-neutral-200/80 dark:border-neutral-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 dark:text-neutral-400 gap-3">
+      <div>
+        Node.js Express &bull; REST API Architecture
+      </div>
+      <div class="flex items-center gap-3">
+        <span>Shortcuts: <kbd class="px-1.5 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-xs font-mono">/</kbd> Search &nbsp;&bull;&nbsp; <kbd class="px-1.5 py-0.5 rounded bg-neutral-200/80 dark:bg-neutral-800 text-xs font-mono">N</kbd> New Task</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Detailed Edit/Create Task Modal -->
+  <div id="taskModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-neutral-950/40 dark:bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-150">
+    <div id="taskModalCard" class="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-xl max-w-lg w-full overflow-hidden transform scale-95 transition-transform duration-150 max-h-[90vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </div>
+          <h3 id="modalTitle" class="text-base font-semibold text-neutral-900 dark:text-white">Edit Task</h3>
+        </div>
+        <button id="closeModalBtn" aria-label="Close modal" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition focus-visible:ring-2 focus-visible:ring-indigo-500">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form id="modalForm" class="p-5 space-y-4 overflow-y-auto flex-1 text-sm">
+        <input type="hidden" id="modalTaskId">
+
+        <!-- Title -->
+        <div>
+          <label class="block font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-xs mb-1.5">Task Title *</label>
+          <input
+            type="text"
+            id="modalTitleInput"
+            required
+            placeholder="e.g. Prepare quarterly presentation"
+            class="w-full px-3.5 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white placeholder-neutral-400 transition"
+          >
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-xs mb-1.5">Description</label>
+          <textarea
+            id="modalDescInput"
+            rows="3"
+            placeholder="Add relevant notes or details..."
+            class="w-full px-3.5 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white placeholder-neutral-400 transition resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Category & Priority Row with Custom Chevrons -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-xs mb-1.5">Category</label>
+            <div class="relative">
+              <select
+                id="modalCategorySelect"
+                class="w-full appearance-none pl-3 pr-8 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white transition cursor-pointer"
+              >
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+                <option value="Health">Health</option>
+                <option value="Study">Study</option>
+                <option value="Finance">Finance</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-neutral-500 dark:text-neutral-400">
+                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-xs mb-1.5">Priority</label>
+            <div class="relative">
+              <select
+                id="modalPrioritySelect"
+                class="w-full appearance-none pl-3 pr-8 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white transition cursor-pointer"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-neutral-500 dark:text-neutral-400">
+                <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Due Date & Pin Switch Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+          <div>
+            <label class="block font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-xs mb-1.5">Due Date</label>
+            <input
+              type="date"
+              id="modalDueDateInput"
+              class="w-full px-3 py-2 text-sm bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500 text-neutral-900 dark:text-white transition cursor-pointer"
+            >
+          </div>
+
+          <!-- Consistent Custom Checkbox for Pin to Top -->
+          <div class="pt-1 sm:pt-4 flex items-center">
+            <label class="flex items-center gap-2.5 cursor-pointer select-none">
+              <input type="checkbox" id="modalPinnedCheckbox" class="sr-only peer">
+              <span class="custom-checkbox peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500"></span>
+              <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+                <span>Pin to top</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Subtasks Section -->
+        <div class="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+          <div class="flex items-center justify-between mb-2">
+            <label class="block font-medium text-neutral-600 dark:text-neutral-400 uppercase tracking-wider text-xs">Subtasks</label>
+            <span id="modalSubtaskCount" class="text-xs text-neutral-500 dark:text-neutral-400 font-normal">0 items</span>
+          </div>
+
+          <div id="modalSubtaskList" class="space-y-1.5 mb-2.5 max-h-36 overflow-y-auto pr-1">
+            <!-- Modal subtasks list items -->
+          </div>
+
+          <!-- Add subtask input -->
+          <div class="flex gap-2">
+            <input
+              type="text"
+              id="modalNewSubtaskInput"
+              placeholder="Add a subtask..."
+              class="flex-1 px-3 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-white placeholder-neutral-400 focus:outline-none focus:border-indigo-500 focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+            <button
+              type="button"
+              id="modalAddSubtaskBtn"
+              class="px-3.5 py-1.5 text-sm font-medium bg-neutral-200/80 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-lg transition focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3.5 bg-neutral-50 dark:bg-neutral-800/40 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-end gap-2.5">
+        <button
+          type="button"
+          id="cancelModalBtn"
+          class="px-3.5 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200/60 dark:hover:bg-neutral-800 rounded-lg transition focus-visible:ring-2 focus-visible:ring-indigo-500"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form="modalForm"
+          id="saveModalBtn"
+          class="px-4 py-2 text-sm font-medium bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-lg shadow-sm transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
+        >
+          Save Task
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
+    <!-- Toasts dynamically appear here -->
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
